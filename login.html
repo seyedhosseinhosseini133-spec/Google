@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ورود و ثبت‌نام</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family: 'Vazirmatn', sans-serif; }
+  
+  :root {
+    --card-bg: rgba(15, 25, 45, 0.45);
+    --card-border: rgba(100, 160, 255, 0.4);
+    --input-bg: rgba(5, 10, 20, 0.75);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --text-muted: #8895a7;
+    --blue: #2d7bfa;
+    --blue-glow: rgba(45, 123, 250, 0.6);
+    --danger: #ef4444;
+    --success: #10b981;
+  }
+
+  body {
+    height: 100vh; height: 100dvh;
+    color: var(--text);
+    display: flex; align-items: flex-end; justify-content: center;
+    overflow: hidden;
+    background-color: #050510;
+    background-image: url('https://cdn.imgurl.ir/uploads/o44869_.png');
+    background-size: cover;          
+    background-position: center;     
+    background-repeat: no-repeat;    
+    padding-bottom: 20px;
+  }
+
+  .main-container {
+    position: relative; z-index: 10;
+    width: 100%; max-width: 310px;
+    display: flex; flex-direction: column; align-items: center; gap: 15px;
+  }
+
+  .glass-card {
+    width: 100%; background: var(--card-bg);
+    backdrop-filter: blur(25px) saturate(150%); -webkit-backdrop-filter: blur(25px) saturate(150%);
+    border: 1.5px solid var(--card-border);
+    border-radius: 28px; padding: 25px 16px 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(45, 123, 250, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    display: flex; flex-direction: column; gap: 12px;
+    position: relative; transition: all 0.3s ease;
+  }
+
+  .glass-card.error-state {
+    border-color: var(--danger);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 50px rgba(239, 68, 68, 0.5);
+    animation: shakeCard 0.4s ease-in-out;
+  }
+  @keyframes shakeCard {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .form-section { display: none; flex-direction: column; gap: 10px; }
+  .form-section.active { display: flex; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .input-group { position: relative; display: flex; flex-direction: column; gap: 3px; }
+  
+  .input-box {
+    position: relative; background: var(--input-bg);
+    border: 1.5px solid var(--input-border); border-radius: 25px;
+    height: 52px; display: flex; align-items: center;
+    padding: 0 6px; box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s;
+  }
+  .input-box:focus-within { border-color: rgba(59, 130, 246, 0.7); box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 20px rgba(45, 123, 250, 0.3); }
+  .input-box.error-border { border-color: var(--danger); box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 15px rgba(239, 68, 68, 0.3); }
+
+  .input-box .icon {
+    color: var(--text-muted); width: 20px; height: 20px;
+    margin-right: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  .input-box input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 13px; padding: 0 5px;
+    text-align: right; width: 100%; font-family: inherit;
+  }
+  .input-box input::placeholder { color: var(--text-muted); font-size: 11.5px; }
+
+  .btn-arrow-inline {
+    width: 38px; height: 38px; background: var(--blue);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer; box-shadow: 0 4px 15px var(--blue-glow);
+    flex-shrink: 0; transition: transform 0.2s;
+  }
+  .btn-arrow-inline:active { transform: scale(0.9); }
+  .btn-arrow-inline svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+  .icon-eye { color: var(--text-muted); cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .icon-eye svg { width: 18px; height: 18px; }
+
+  .error-text { color: var(--danger); font-size: 10.5px; margin-right: 15px; display: none; font-weight: 600; }
+  .error-text.show { display: block; animation: fadeIn 0.2s ease; }
+
+  .btn-main {
+    width: 100%; height: 52px; border-radius: 25px;
+    background: linear-gradient(180deg, #4da1ff 0%, #1e5dd8 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2); color: #fff;
+    font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; transition: all 0.15s; box-shadow: 0 8px 25px rgba(45, 123, 250, 0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+    margin-top: 4px;
+  }
+  .btn-main:active { transform: translateY(2px); box-shadow: 0 4px 15px rgba(45, 123, 250, 0.4); }
+  .btn-main svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+  .btn-switch-mode {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 70%; max-width: 200px; height: 46px; border-radius: 23px;
+    background: rgba(15, 20, 35, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border: 1.5px solid rgba(255, 255, 255, 0.15); color: var(--text);
+    font-size: 12px; font-weight: 500; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-switch-mode:active { background: rgba(255, 255, 255, 0.15); transform: scale(0.98); }
+  .btn-switch-mode b { color: #4da1ff; font-weight: 700; margin-right: 4px; }
+
+  .otp-modal {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    padding: 20px;
+  }
+  .otp-modal.show { opacity: 1; pointer-events: all; }
+
+  .otp-card {
+    background: rgba(15, 25, 45, 0.95);
+    border: 1.5px solid var(--card-border);
+    border-radius: 28px; padding: 20px 15px; width: 100%; max-width: 300px;
+    text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 50px rgba(45,123,250,0.3);
+    transform: scale(0.85) translateY(20px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .otp-modal.show .otp-card { transform: scale(1) translateY(0); }
+  .otp-modal.error .otp-card { 
+    animation: shakeCard 0.4s; 
+    border-color: var(--danger); 
+    box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 50px rgba(239, 68, 68, 0.4);
+  }
+
+  .otp-icon {
+    width: 45px; height: 45px; margin: 0 auto 10px;
+    background: rgba(45, 123, 250, 0.15); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #4da1ff;
+  }
+  .otp-icon svg { width: 24px; height: 24px; }
+  .otp-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .otp-subtitle { font-size: 10px; color: var(--text-muted); margin-bottom: 12px; }
+  .otp-test-code {
+    display: inline-block; background: rgba(255,255,255,0.08); padding: 6px 12px;
+    border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 16px;
+    letter-spacing: 4px; color: #4da1ff; border: 1.5px dashed rgba(77, 161, 255, 0.5);
+  }
+  .otp-inputs { display: flex; justify-content: center; gap: 6px; direction: ltr; margin-bottom: 15px; }
+  .otp-inputs input {
+    width: 38px; height: 46px; background: rgba(0, 0, 0, 0.6); border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px; color: #fff; font-size: 20px; font-weight: 700; text-align: center;
+    outline: none; transition: all 0.2s; box-shadow: inset 0 4px 10px rgba(0,0,0,0.6);
+  }
+  .otp-inputs input:focus { border-color: var(--blue); box-shadow: inset 0 4px 10px rgba(0,0,0,0.6), 0 0 15px rgba(45, 123, 250, 0.4); transform: scale(1.05); }
+  .otp-inputs input.filled { border-color: var(--blue); }
+  .otp-inputs input.error { border-color: var(--danger); color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+
+  .otp-inputs.loading input {
+    pointer-events: none;
+    opacity: 0.5;
+    animation: pulse 1s infinite alternate;
+  }
+  @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+  .btn-close-otp {
+    width: 100%; height: 42px; border-radius: 14px; background: rgba(255,255,255,0.1);
+    border: none; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+  }
+
+  .success-popup {
+    position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+    background: rgba(16, 185, 129, 0.95); backdrop-filter: blur(10px);
+    color: #fff; padding: 12px 20px; border-radius: 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 700;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+    z-index: 1000; transition: top 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+  }
+  .success-popup.show { top: 20px; }
+  .success-icon {
+    width: 20px; height: 20px; background: #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--success); font-weight: 900; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="success-popup" id="successPopup">
+    <div class="success-icon">✓</div>
+    <span id="successMessage">عملیات با موفقیت انجام شد</span>
+  </div>
+
+  <div class="main-container">
+    
+    <div class="glass-card" id="mainCard">
+      
+      <!-- فرم ورود -->
+      <div class="form-section active" id="loginForm">
+        <div class="input-group">
+          <div class="input-box">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <input type="tel" id="loginPhone" placeholder="09123456789" dir="ltr" style="text-align: right;" maxlength="11" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 11)">
+            <button class="btn-arrow-inline">
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+          <div class="error-text" id="loginPhoneError">شماره موبایل باید ۱۱ رقم و با 09 شروع شود</div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-box">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <input type="password" id="loginPass" placeholder="رمز عبور">
+            <div class="icon-eye" onclick="togglePass('loginPass', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </div>
+          </div>
+          <div class="error-text" id="loginPassError">رمز عبور را وارد کنید</div>
+        </div>
+
+        <button class="btn-main" onclick="doLogin()">
+          <span id="loginBtnText">ورود به حساب</span>
+          <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+      </div>
+
+      <!-- فرم ثبت‌نام -->
+      <div class="form-section" id="signupForm">
+        <div class="input-group">
+          <div class="input-box">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <input type="text" id="signupName" placeholder="نام و نام خانوادگی">
+          </div>
+          <div class="error-text" id="signupNameError">نام باید حداقل ۳ کاراکتر باشد</div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-box">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <input type="tel" id="signupPhone" placeholder="09123456789" dir="ltr" style="text-align: right;" maxlength="11" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 11)">
+          </div>
+          <div class="error-text" id="signupPhoneError">شماره موبایل باید ۱۱ رقم و با 09 شروع شود</div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-box">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <input type="password" id="signupPass" placeholder="رمز عبور">
+            <div class="icon-eye" onclick="togglePass('signupPass', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </div>
+          </div>
+          <div class="error-text" id="signupPassError">رمز عبور باید حداقل ۶ کاراکتر باشد</div>
+        </div>
+
+        <button class="btn-main" onclick="doSignup()">
+          <span id="signupBtnText">ثبت‌نام</span>
+          <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+      </div>
+
+      <div class="error-text" id="globalError" style="text-align: center; margin: 0; margin-top: 5px;"></div>
+
+    </div>
+
+    <button class="btn-switch-mode" id="toggleModeBtn" onclick="toggleMode()">
+      <div style="color: #4da1ff; display: flex; align-items: center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+      </div>
+      <span id="toggleText">حساب ندارید؟ <b>ثبت نام کنید</b></span>
+    </button>
+  </div>
+
+  <!-- مودال OTP -->
+  <div class="otp-modal" id="otpModal">
+    <div class="otp-card" id="otpCard">
+      <div class="otp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      </div>
+      <h2 class="otp-title">کد تأیید را وارد کنید</h2>
+      <p class="otp-subtitle">کد ۵ رقمی به شماره شما ارسال شد</p>
+      
+      <div class="otp-test-code" id="otpTestCode">-----</div>
+
+      <div class="otp-inputs" id="otpInputs">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+      </div>
+
+      <button class="btn-close-otp" onclick="closeOTP()">انصراف</button>
+    </div>
+  </div>
+
+<script>
+  // =========================================
+  // مدیریت تغییر حالت
+  // =========================================
+  let isLoginMode = true;
+  function toggleMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('loginForm').classList.toggle('active', isLoginMode);
+    document.getElementById('signupForm').classList.toggle('active', !isLoginMode);
+    document.getElementById('toggleText').innerHTML = isLoginMode ? 'حساب ندارید؟ <b>ثبت نام کنید</b>' : 'حساب دارید؟ <b>وارد شوید</b>';
+    document.getElementById('globalError').classList.remove('show');
+  }
+
+  function togglePass(inputId, iconDiv) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      iconDiv.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    } else {
+      input.type = 'password';
+      iconDiv.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+    }
+  }
+
+  // =========================================
+  // نمایش پاپ‌آپ و ارور
+  // =========================================
+  function showSuccess(msg) {
+    const popup = document.getElementById('successPopup');
+    document.getElementById('successMessage').innerText = msg;
+    popup.classList.add('show');
+    setTimeout(() => popup.classList.remove('show'), 3000);
+  }
+
+  function triggerError(showGlobalMsg = null) {
+    const card = document.getElementById('mainCard');
+    card.classList.add('error-state');
+    setTimeout(() => card.classList.remove('error-state'), 1000);
+    
+    if (showGlobalMsg) {
+      const globalErr = document.getElementById('globalError');
+      globalErr.innerText = showGlobalMsg;
+      globalErr.classList.add('show');
+    }
+  }
+
+  // =========================================
+  // ورود
+  // =========================================
+  async function doLogin() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+    
+    let valid = true;
+    document.querySelectorAll('#loginForm .error-text').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('#loginForm .input-box').forEach(e => e.classList.remove('error-border'));
+    document.getElementById('globalError').classList.remove('show');
+
+    if (!/^09\d{9}$/.test(phone)) {
+      document.getElementById('loginPhoneError').classList.add('show');
+      document.getElementById('loginPhone').parentElement.classList.add('error-border');
+      valid = false;
+    }
+    if (pass.length < 1) {
+      document.getElementById('loginPassError').classList.add('show');
+      document.getElementById('loginPass').parentElement.classList.add('error-border');
+      valid = false;
+    }
+    if (!valid) { triggerError(); return; }
+
+    const btn = document.getElementById('loginBtnText');
+    btn.innerText = 'در حال بررسی...';
+    const fd = new FormData();
+    fd.append('phone', phone);
+    fd.append('password', pass);
+
+    try {
+      const res = await fetch('login.php', { 
+        method: 'POST', 
+        body: fd,
+        credentials: 'include'
+      });
+      const text = await res.text();
+      console.log('[login] status:', res.status, 'response:', text);
+      
+      let data;
+      try { data = JSON.parse(text); } catch (e) {
+        triggerError('خطا در پاسخ سرور'); 
+        btn.innerText = 'ورود به حساب'; 
+        return;
+      }
+      
+      if (data.success) {
+        // ⭐ اگه ادمین بود → پنل مدیریت، وگرنه → صفحه اصلی
+        if (data.is_admin) {
+          showSuccess('ورود ادمین! در حال انتقال به پنل...');
+          setTimeout(() => {
+            window.location.replace('admin.php');
+          }, 1000);
+        } else {
+          showSuccess('ورود موفق! در حال انتقال...');
+          setTimeout(() => {
+            window.location.replace('google-home.html');
+          }, 1000);
+        }
+      } else {
+        triggerError(data.message || 'شماره یا رمز اشتباه است');
+        btn.innerText = 'ورود به حساب';
+      }
+    } catch (err) {
+      console.error(err);
+      triggerError('خطا در اتصال به سرور');
+      btn.innerText = 'ورود به حساب';
+    }
+  }
+
+  // =========================================
+  // ثبت‌نام
+  // =========================================
+  const otpModal = document.getElementById('otpModal');
+  const otpInputsContainer = document.getElementById('otpInputs');
+  const otpInputs = document.querySelectorAll('#otpInputs input');
+  let signupData = { name: '', phone: '', password: '' };
+
+  async function doSignup() {
+    const name = document.getElementById('signupName').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const pass = document.getElementById('signupPass').value.trim();
+    
+    let valid = true;
+    document.querySelectorAll('#signupForm .error-text').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('#signupForm .input-box').forEach(e => e.classList.remove('error-border'));
+    document.getElementById('globalError').classList.remove('show');
+
+    if (name.length < 3) {
+      document.getElementById('signupNameError').classList.add('show');
+      document.getElementById('signupName').parentElement.classList.add('error-border');
+      valid = false;
+    }
+    if (!/^09\d{9}$/.test(phone)) {
+      document.getElementById('signupPhoneError').classList.add('show');
+      document.getElementById('signupPhone').parentElement.classList.add('error-border');
+      valid = false;
+    }
+    if (pass.length < 6) {
+      document.getElementById('signupPassError').classList.add('show');
+      document.getElementById('signupPass').parentElement.classList.add('error-border');
+      valid = false;
+    }
+    if (!valid) { triggerError(); return; }
+
+    const btn = document.getElementById('signupBtnText');
+    btn.innerText = 'در حال ارسال کد...';
+
+    const fd = new FormData();
+    fd.append('phone', phone);
+
+    try {
+      const res = await fetch('send_code.php', { 
+        method: 'POST', 
+        body: fd,
+        credentials: 'include'
+      });
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) {
+        triggerError('خطا در پاسخ سرور'); 
+        btn.innerText = 'ثبت‌نام'; 
+        return;
+      }
+
+      if (data.success) {
+        signupData = { name, phone, password: pass };
+        document.getElementById('otpTestCode').innerText = data.code;
+        otpInputs.forEach(i => { i.value = ''; i.classList.remove('filled', 'error'); });
+        otpInputsContainer.classList.remove('loading');
+        otpModal.classList.add('show');
+        setTimeout(() => otpInputs[0].focus(), 300);
+      } else {
+        triggerError(data.message);
+      }
+    } catch (err) {
+      triggerError('خطا در اتصال به سرور');
+    }
+    btn.innerText = 'ثبت‌نام';
+  }
+
+  function closeOTP() { otpModal.classList.remove('show', 'error'); }
+
+  // =========================================
+  // ورود خودکار کد 5 رقمی
+  // =========================================
+  otpInputs.forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, ''); 
+      e.target.value = val;
+      if (val) {
+        e.target.classList.add('filled');
+        if (index < otpInputs.length - 1) otpInputs[index + 1].focus();
+      } else {
+        e.target.classList.remove('filled');
+      }
+      
+      if (index === otpInputs.length - 1 && val) {
+        checkOTP();
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && index > 0) otpInputs[index - 1].focus();
+    });
+  });
+
+  async function checkOTP() {
+    const enteredCode = Array.from(otpInputs).map(i => i.value).join('');
+    if (enteredCode.length === 5) {
+      otpInputsContainer.classList.add('loading');
+
+      const fd = new FormData();
+      fd.append('name', signupData.name);
+      fd.append('phone', signupData.phone);
+      fd.append('password', signupData.password);
+      fd.append('code', enteredCode);
+
+      try {
+        const res = await fetch('register.php', { 
+          method: 'POST', 
+          body: fd,
+          credentials: 'include'
+        });
+        const text = await res.text();
+        console.log('[register] status:', res.status, 'response:', text);
+        
+        let data;
+        try { data = JSON.parse(text); } catch (e) {
+          otpInputsContainer.classList.remove('loading');
+          triggerError('خطا در پردازش پاسخ سرور');
+          return;
+        }
+
+        if (data.success) {
+          closeOTP();
+          showSuccess('ثبت‌نام موفق! در حال ورود...');
+          
+          // ⭐ کاربر جدید → صفحه اصلی (ادمین نیست)
+          setTimeout(() => {
+            window.location.replace('google-home.html');
+          }, 1000);
+        } else {
+          otpInputsContainer.classList.remove('loading');
+          otpModal.classList.add('error');
+          otpInputs.forEach(i => i.classList.add('error'));
+          setTimeout(() => {
+            otpModal.classList.remove('error');
+            otpInputs.forEach(i => { i.value = ''; i.classList.remove('error', 'filled'); });
+            otpInputs[0].focus();
+          }, 1000);
+        }
+      } catch (err) {
+        otpInputsContainer.classList.remove('loading');
+        triggerError('خطای شبکه');
+      }
+    }
+  }
+</script>
+</body>
+</html>

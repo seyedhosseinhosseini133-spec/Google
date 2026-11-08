@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>در حال بارگذاری...</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: Vazirmatn, sans-serif;
+    background:
+      radial-gradient(70% 55% at 92% -6%, rgba(74,111,165,.55), transparent 62%),
+      radial-gradient(60% 45% at 2% 30%, rgba(143,163,184,.32), transparent 60%),
+      radial-gradient(70% 50% at 0% 105%, rgba(201,123,74,.30), transparent 60%),
+      linear-gradient(180deg, #0d1117, #070a0e 55%, #050810);
+    color: #eef2ff;
+  }
+
+  /* 🫧 حباب‌های پراکنده در کل صفحه */
+  .bubbles-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 40%),
+      radial-gradient(circle at 70% 80%, rgba(0,0,0,.35), transparent 55%),
+      radial-gradient(circle at 50% 50%, rgba(120,160,255,.18), rgba(120,160,255,.05) 70%);
+    box-shadow:
+      inset 0 0 25px rgba(255,255,255,.25),
+      inset -10px -10px 40px rgba(66,133,244,.35),
+      inset 10px 10px 40px rgba(155,114,203,.25),
+      0 0 60px rgba(66,133,244,.25);
+    animation: floatY 8s ease-in-out infinite;
+    backdrop-filter: blur(2px);
+    will-change: transform;
+  }
+
+  .bubble::before {
+    content: '';
+    position: absolute;
+    top: 25%;
+    left: 22%;
+    width: 22%;
+    height: 22%;
+    border-radius: 50%;
+    background: rgba(255,255,255,.85);
+    filter: blur(2px);
+  }
+  .bubble::after {
+    content: '';
+    position: absolute;
+    top: 42%;
+    left: 40%;
+    width: 12%;
+    height: 12%;
+    border-radius: 50%;
+    background: rgba(255,255,255,.7);
+    filter: blur(2px);
+  }
+
+  .bubble span {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .bubble span:nth-child(1) { inset: 5%; border-left: 12px solid #0fb4ff; filter: blur(8px); }
+  .bubble span:nth-child(2) { inset: 5%; border-right: 12px solid #ff4484; filter: blur(8px); }
+  .bubble span:nth-child(3) { inset: 5%; border-top: 12px solid #ffeb3b; filter: blur(8px); }
+  .bubble span:nth-child(4) { inset: 15%; border-left: 12px solid #ff4484; filter: blur(12px); }
+  .bubble span:nth-child(5) { inset: 5%; border-bottom: 10px solid #fff; filter: blur(8px); transform: rotate(330deg); }
+
+  /* موقعیت پراکنده هر حباب — از قبل تعریف شده */
+  .bubble:nth-child(1) { width: 140px; height: 140px; top: 8%;  left: 8%;  animation-delay: 0s;   }
+  .bubble:nth-child(2) { width: 90px;  height: 90px;  top: 15%; right: 12%; animation-delay: -1.5s;}
+  .bubble:nth-child(3) { width: 180px; height: 180px; top: 55%; left: -4%;  animation-delay: -3s;  }
+  .bubble:nth-child(4) { width: 70px;  height: 70px;  top: 42%; right: 8%;  animation-delay: -4.5s;}
+  .bubble:nth-child(5) { width: 110px; height: 110px; bottom: 12%; left: 30%; animation-delay: -2s;}
+  .bubble:nth-child(6) { width: 60px;  height: 60px;  bottom: 25%; right: 25%; animation-delay: -6s;}
+  .bubble:nth-child(7) { width: 50px;  height: 50px;  top: 30%;  left: 45%; animation-delay: -7s;  opacity: .6;}
+
+  @keyframes floatY {
+    0%, 100% { transform: translateY(-20px) scale(1); }
+    50%      { transform: translateY(20px) scale(1.04); }
+  }
+
+  /* 📝 لودینگ وسط صفحه */
+  .loader-wrap {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    z-index: 10;
+    padding: 20px;
+  }
+
+  .logo {
+    font-family: 'Google Sans', Arial, sans-serif;
+    font-weight: 500;
+    font-size: 56px;
+    letter-spacing: -3px;
+    direction: ltr;
+    display: inline-block;
+    filter: drop-shadow(0 6px 18px rgba(66,133,244,.45));
+  }
+  .logo span {
+    display: inline-block;
+    animation: letterBounce 2s ease-in-out infinite;
+  }
+  .logo span:nth-child(1) { color: #4285f4; animation-delay: 0s;   }
+  .logo span:nth-child(2) { color: #ea4335; animation-delay: .1s;  }
+  .logo span:nth-child(3) { color: #fbbc05; animation-delay: .2s;  }
+  .logo span:nth-child(4) { color: #4285f4; animation-delay: .3s;  }
+  .logo span:nth-child(5) { color: #34a853; animation-delay: .4s;  }
+  .logo span:nth-child(6) { color: #ea4335; animation-delay: .5s;  }
+  @keyframes letterBounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+
+  .loader-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #eef2ff;
+    letter-spacing: .3px;
+    text-align: center;
+  }
+  .loader-sub {
+    font-size: 13px;
+    color: #93a0bd;
+    margin-top: 4px;
+    text-align: center;
+    min-height: 20px;
+  }
+
+  .dots {
+    display: inline-flex;
+    gap: 5px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: dotBounce 1.4s ease-in-out infinite;
+  }
+  .dots span:nth-child(1) { background: #4285f4; animation-delay: 0s;   }
+  .dots span:nth-child(2) { background: #ea4335; animation-delay: .2s;  }
+  .dots span:nth-child(3) { background: #fbbc05; animation-delay: .4s;  }
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: .5; }
+    40%           { transform: translateY(-8px); opacity: 1; }
+  }
+
+  .progress-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(66,133,244,.1);
+    overflow: hidden;
+    z-index: 20;
+  }
+  .progress-bar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #4285f4, #ea4335, #fbbc05, #34a853);
+    transform: translateX(-100%);
+    animation: progressSlide 1.5s ease-in-out infinite;
+  }
+  @keyframes progressSlide {
+    to { transform: translateX(100%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* From Uiverse.io by SmookyDev */ 
+.center_div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+}
+
+.wave {
+  width: 1.8rem;
+  height: 150px;
+  background-color: #ff6b6b;
+  margin: 0 4px;
+  border-radius: 0.4rem;
+  animation: wave 1.5s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(0);
+    filter: hue-rotate(90deg) blur(100px);
+  }
+  25% {
+    transform: scale(0);
+    filter: hue-rotate(120deg) blur(50px);
+  }
+  50% {
+    transform: scale(1);
+    filter: hue-rotate(180deg) blur(25px);
+  }
+  25% {
+    transform: scale(0);
+    filter: hue-rotate(360deg) blur(2px);
+  }
+  100% {
+    transform: scale(0);
+    filter: hue-rotate(0deg) blur(0);
+  }
+}
+
+.wave:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.wave:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.wave:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.wave:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.wave:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.wave:nth-child(7) {
+  animation-delay: 0.6s;
+}
+
+.wave:nth-child(8) {
+  animation-delay: 0.7s;
+}
+
+.wave:nth-child(9) {
+  animation-delay: 0.8s;
+}
+
+.wave:nth-child(10) {
+  animation-delay: 0.9s;
+}
+
+</style>
+</head>
+<body>
+
+<!-- 🫧 حباب‌های پراکنده در پس‌زمینه -->
+<div class="bubbles-bg" aria-hidden="true">
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- 📝 محتوای وسط -->
+<div class="loader-wrap">
+  <div class="logo">
+    <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+  </div>
+  <div style="text-align:center">
+    <p class="loader-text" id="loaderText">
+      در حال بررسی حساب
+      <span class="dots"><span></span><span></span><span></span></span>
+    </p>
+    <p class="loader-sub" id="loaderSub">لطفاً صبر کنید…</p>
+  </div>
+</div>
+
+<div class="progress-bar"></div>
+
+<!-- From Uiverse.io by SmookyDev --> 
+<div class="center_div">
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
+
+
+<script>
+const loaderText = document.getElementById('loaderText');
+const loaderSub  = document.getElementById('loaderSub');
+
+async function checkAndRedirect() {
+  const startTime = Date.now();
+  const MIN_DELAY = 2500; // ⏱️ حداقل ۲.۵ ثانیه لودینگ
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    const res = await fetch('check_session.php', {
+      credentials: 'include',
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+    clearTimeout(timeoutId);
+
+    const data = await res.json();
+    console.log('[check_session]', data);
+
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, MIN_DELAY - elapsed);
+
+    if (data.logged_in) {
+      loaderSub.textContent = 'خوش آمدید! در حال ورود…';
+      setTimeout(() => {
+        window.location.replace('google-home.html'); // ✅ فایل اصلی
+      }, remaining);
+    } else {
+      loaderSub.textContent = 'در حال انتقال به صفحه ورود…';
+      setTimeout(() => {
+        window.location.replace('login.html');
+      }, remaining);
+    }
+  } catch(e) {
+    console.error('check_session error:', e);
+    loaderSub.textContent = 'خطا در اتصال، انتقال به ورود…';
+    setTimeout(() => {
+      window.location.replace('login.html');
+    }, 1500);
+  }
+}
+
+checkAndRedirect();
+</script>
+</body>
+</html>

@@ -1,0 +1,827 @@
+  <!DOCTYPE html>
+  <html lang="fa" dir="ltr">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <title>Steel Calc</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    :root {
+      --steel: #8fa3b8;
+      --navy: #4a6fa5;
+      --copper: #c97b4a;
+      --graphite: #2b3138;
+      --silver: #d4dde6;
+    }
+
+    html, body { height:100%; overflow:hidden; }
+
+    body {
+      display:flex; align-items:center; justify-content:center;
+      background: #0d1117;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+      position: relative;
+      perspective: 1400px;
+    }
+
+    #bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(74,111,165,0.22), transparent 45%),
+        radial-gradient(circle at 80% 25%, rgba(143,163,184,0.16), transparent 45%),
+        radial-gradient(circle at 30% 85%, rgba(201,123,74,0.12), transparent 45%),
+        radial-gradient(circle at 75% 80%, rgba(43,49,56,0.6), transparent 50%),
+        linear-gradient(160deg, #161b22, #0d1117 60%, #070a0e);
+    }
+
+    #particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    #scanlines {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.014) 0px,
+        rgba(255,255,255,0.014) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      mix-blend-mode: overlay;
+      opacity: 0.5;
+    }
+
+    /* ===== ماشین‌حساب سه‌بعدی شیشه‌ای ===== */
+    .calculator {
+      position: relative; z-index: 3;
+      width: 100%; max-width: 370px;
+      background: linear-gradient(145deg, rgba(143,163,184,0.13), rgba(43,49,56,0.25));
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border-radius: 40px;
+      padding: 24px;
+      border: 1.5px solid rgba(212,221,230,0.22);
+      transform-style: preserve-3d;
+      transform: rotateX(6deg);
+      box-shadow:
+        0 0 55px rgba(74,111,165,0.28),
+        0 0 110px rgba(143,163,184,0.12),
+        0 24px 50px rgba(0,0,0,0.65),
+        0 12px 25px rgba(43,49,56,0.5),
+        inset 0 2px 1px rgba(212,221,230,0.35),
+        inset 0 -2px 2px rgba(0,0,0,0.4),
+        inset 2px 0 2px rgba(143,163,184,0.12),
+        inset -2px 0 2px rgba(74,111,165,0.12);
+      animation: bootIn 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .calculator::before {
+      content: "";
+      position: absolute; inset: -3px;
+      border-radius: 43px;
+      background: linear-gradient(135deg, var(--steel), var(--navy), var(--copper), var(--steel));
+      background-size: 300% 300%;
+      z-index: -1;
+      filter: blur(8px);
+      opacity: 0.5;
+      animation: borderFlow 9s linear infinite;
+    }
+
+    .calculator::after {
+      content: "";
+      position: absolute;
+      top: 6px; left: 12%; right: 12%;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, rgba(212,221,230,0.22), transparent);
+      filter: blur(8px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes borderFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    @keyframes bootIn {
+      from { opacity: 0; transform: rotateX(6deg) translateY(50px) scale(0.9); filter: blur(10px); }
+      to { opacity: 1; transform: rotateX(6deg) translateY(0) scale(1); filter: blur(0); }
+    }
+
+    /* ===== نمایشگر شیشه‌ای ===== */
+    .display {
+      min-height: 130px;
+      padding: 18px 14px 14px;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      background: linear-gradient(160deg, rgba(143,163,184,0.12), rgba(13,17,23,0.35));
+      border-radius: 24px;
+      border: 1px solid rgba(212,221,230,0.18);
+      box-shadow:
+        inset 0 2px 6px rgba(212,221,230,0.18),
+        inset 0 -2px 6px rgba(0,0,0,0.35),
+        0 4px 12px rgba(0,0,0,0.35);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .display::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 45%;
+      background: linear-gradient(to bottom, rgba(212,221,230,0.15), transparent);
+      pointer-events: none;
+    }
+
+    .history {
+      font-size: 15px;
+      color: rgba(143,163,184,0.75);
+      min-height: 20px;
+      letter-spacing: 1px;
+      font-weight: 300;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      transition: all 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .current {
+      font-size: 54px;
+      font-weight: 200;
+      color: #f0f4f8;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      text-shadow:
+        0 1px 2px rgba(0,0,0,0.3),
+        0 0 20px rgba(143,163,184,0.4),
+        0 0 40px rgba(74,111,165,0.3);
+      transition: font-size 0.15s ease, transform 0.1s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .current.small { font-size: 38px; }
+    .current.tiny { font-size: 28px; }
+
+    .current.flash { animation: flash 0.35s ease; }
+    @keyframes flash {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.05); color: var(--silver); }
+      100% { transform: scale(1); }
+    }
+
+    .error { color: var(--copper) !important; text-shadow: 0 0 20px var(--copper) !important; }
+
+    /* ===== دکمه‌های سه‌بعدی ===== */
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      perspective: 800px;
+    }
+
+    button {
+      height: 68px;
+      border: none;
+      border-radius: 22px;
+      font-size: 25px;
+      font-weight: 500;
+      color: #f0f4f8;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, "Segoe UI", sans-serif;
+      transform-style: preserve-3d;
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
+      background: linear-gradient(145deg, rgba(143,163,184,0.22), rgba(43,49,56,0.35));
+      border: 1px solid rgba(212,221,230,0.28);
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.5),
+        inset 0 -3px 2px rgba(0,0,0,0.45),
+        inset 2px 0 2px rgba(143,163,184,0.15),
+        inset -2px 0 2px rgba(74,111,165,0.15),
+        0 6px 0 rgba(0,0,0,0.5),
+        0 8px 14px rgba(0,0,0,0.5),
+        0 12px 24px rgba(43,49,56,0.4);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    }
+
+    button::before {
+      content: "";
+      position: absolute;
+      top: 3px; left: 10%; right: 10%;
+      height: 45%;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, rgba(212,221,230,0.4), transparent);
+      filter: blur(3px);
+      pointer-events: none;
+    }
+
+    button::after {
+      content: "";
+      position: absolute;
+      bottom: 4px; left: 15%; right: 15%;
+      height: 20%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(212,221,230,0.2), transparent 70%);
+      pointer-events: none;
+    }
+
+    button:hover {
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.6),
+        inset 0 -3px 2px rgba(0,0,0,0.45),
+        0 6px 0 rgba(0,0,0,0.5),
+        0 8px 18px rgba(0,0,0,0.55),
+        0 14px 30px rgba(74,111,165,0.3);
+    }
+
+    button:active {
+      transform: translateY(5px) scale(0.97);
+      box-shadow:
+        inset 0 1px 1px rgba(212,221,230,0.35),
+        inset 0 -1px 1px rgba(0,0,0,0.35),
+        0 1px 0 rgba(0,0,0,0.5),
+        0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    /* ===== رنگ‌بندی مردونه ===== */
+    .num {
+      color: #f0f4f8;
+      background: linear-gradient(145deg, rgba(143,163,184,0.24), rgba(43,49,56,0.38));
+    }
+    .num:active { background: linear-gradient(145deg, rgba(143,163,184,0.36), rgba(43,49,56,0.5)); }
+
+    .func {
+      color: var(--silver);
+      background: linear-gradient(145deg, rgba(74,111,165,0.35), rgba(43,49,56,0.45));
+      border-color: rgba(143,163,184,0.4);
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.45),
+        inset 0 -3px 2px rgba(0,0,0,0.45),
+        0 6px 0 rgba(0,0,0,0.5),
+        0 8px 14px rgba(0,0,0,0.45),
+        0 0 18px rgba(74,111,165,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .func:active {
+      background: linear-gradient(145deg, rgba(74,111,165,0.5), rgba(43,49,56,0.6));
+      box-shadow:
+        inset 0 1px 1px rgba(212,221,230,0.3),
+        0 1px 0 rgba(0,0,0,0.5),
+        0 0 18px rgba(74,111,165,0.5);
+    }
+
+    .op {
+      color: #f0f4f8;
+      font-size: 27px;
+      background: linear-gradient(145deg, rgba(201,123,74,0.5), rgba(120,70,40,0.4));
+      border-color: rgba(201,123,74,0.55);
+      box-shadow:
+        inset 0 2px 1px rgba(255,200,160,0.5),
+        inset 0 -3px 2px rgba(80,45,25,0.5),
+        0 6px 0 rgba(60,35,20,0.6),
+        0 8px 14px rgba(0,0,0,0.45),
+        0 0 22px rgba(201,123,74,0.35);
+      text-shadow: 0 1px 2px rgba(60,35,20,0.6);
+    }
+    .op:active {
+      background: linear-gradient(145deg, rgba(201,123,74,0.65), rgba(120,70,40,0.55));
+      box-shadow:
+        inset 0 1px 1px rgba(255,200,160,0.35),
+        0 1px 0 rgba(60,35,20,0.6),
+        0 0 22px rgba(201,123,74,0.55);
+    }
+
+    /* ===== دکمه بازگشت ===== */
+    button[data-action="backspace"] {
+      color: var(--silver);
+      background: linear-gradient(145deg, rgba(143,163,184,0.3), rgba(43,49,56,0.42));
+      border-color: rgba(212,221,230,0.32);
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.5),
+        inset 0 -3px 2px rgba(0,0,0,0.45),
+        0 6px 0 rgba(0,0,0,0.5),
+        0 8px 14px rgba(0,0,0,0.45),
+        0 0 18px rgba(143,163,184,0.25);
+    }
+    button[data-action="backspace"]:active {
+      background: linear-gradient(145deg, rgba(143,163,184,0.45), rgba(43,49,56,0.55));
+      box-shadow:
+        inset 0 1px 1px rgba(212,221,230,0.3),
+        0 1px 0 rgba(0,0,0,0.5),
+        0 0 18px rgba(143,163,184,0.45);
+    }
+    button[data-action="backspace"] svg {
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    }
+
+    .equal {
+      background: linear-gradient(145deg, #8fa3b8, #4a6fa5 50%, #c97b4a);
+      background-size: 200% 200%;
+      animation: equalFlow 4s ease infinite;
+      font-size: 30px;
+      border-color: rgba(212,221,230,0.55);
+      box-shadow:
+        inset 0 2px 2px rgba(255,255,255,0.6),
+        inset 0 -3px 2px rgba(0,0,0,0.45),
+        0 6px 0 rgba(0,0,0,0.55),
+        0 8px 14px rgba(0,0,0,0.5),
+        0 0 30px rgba(74,111,165,0.5),
+        0 0 50px rgba(201,123,74,0.25);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 15px rgba(212,221,230,0.6);
+    }
+    .equal:active {
+      transform: translateY(5px) scale(0.95);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.4),
+        0 1px 0 rgba(0,0,0,0.55),
+        0 0 40px rgba(74,111,165,0.7);
+    }
+
+    @keyframes equalFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .zero { grid-column: span 2; }
+
+    .ripple-layer {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,221,230,0.75), transparent 70%);
+      transform: scale(0);
+      animation: rippleAnim 0.55s ease-out;
+      pointer-events: none;
+      z-index: 5;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    .spark {
+      position: fixed;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 999;
+      animation: sparkOut 0.6s ease-out forwards;
+    }
+    @keyframes sparkOut {
+      to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* ===== دکمه صدا ===== */
+    .sound-toggle {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      right: 14px;
+      z-index: 50;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(143,163,184,0.25), rgba(43,49,56,0.4));
+      border: 1px solid rgba(143,163,184,0.35);
+      color: var(--silver);
+      font-size: 18px;
+      backdrop-filter: blur(14px);
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.4),
+        inset 0 -2px 2px rgba(0,0,0,0.4),
+        0 4px 0 rgba(0,0,0,0.5),
+        0 6px 14px rgba(0,0,0,0.5),
+        0 0 18px rgba(74,111,165,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+    .sound-toggle:active {
+      transform: translateY(4px) scale(0.95);
+      box-shadow:
+        inset 0 1px 1px rgba(212,221,230,0.3),
+        0 1px 0 rgba(0,0,0,0.5),
+        0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* ===== دکمه بازگشت به خانه ===== */
+    .home-toggle {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      left: 14px;
+      z-index: 50;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-decoration: none;
+      background: linear-gradient(145deg, rgba(74,111,165,0.4), rgba(43,49,56,0.5));
+      border: 1px solid rgba(143,163,184,0.4);
+      color: var(--silver);
+      backdrop-filter: blur(14px);
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.45),
+        inset 0 -2px 2px rgba(0,0,0,0.4),
+        0 4px 0 rgba(0,0,0,0.5),
+        0 6px 14px rgba(0,0,0,0.5),
+        0 0 18px rgba(74,111,165,0.35);
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
+    }
+    .home-toggle:hover {
+      box-shadow:
+        inset 0 2px 1px rgba(212,221,230,0.55),
+        inset 0 -2px 2px rgba(0,0,0,0.4),
+        0 4px 0 rgba(0,0,0,0.5),
+        0 8px 18px rgba(0,0,0,0.55),
+        0 0 22px rgba(74,111,165,0.5);
+    }
+    .home-toggle:active {
+      transform: translateY(4px) scale(0.95);
+      box-shadow:
+        inset 0 1px 1px rgba(212,221,230,0.3),
+        0 1px 0 rgba(0,0,0,0.5),
+        0 2px 8px rgba(0,0,0,0.5);
+    }
+    .home-toggle svg {
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    }
+
+    @media (max-width: 380px) {
+      button { height: 62px; font-size: 22px; border-radius: 20px; }
+      .current { font-size: 44px; }
+      .calculator { padding: 18px; border-radius: 34px; }
+      .keys { gap: 10px; }
+      .display { min-height: 115px; border-radius: 20px; }
+      button[data-action="backspace"] svg { width: 22px; height: 22px; }
+      .sound-toggle, .home-toggle { width: 42px; height: 42px; }
+    }
+  </style>
+  </head>
+  <body>
+    <div id="bg"></div>
+    <canvas id="particles"></canvas>
+    <div id="scanlines"></div>
+
+    <a class="home-toggle" href="google-home.html" title="بازگشت به خانه" aria-label="بازگشت به صفحه اصلی">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 11.2 12 4l9 7.2"/>
+        <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>
+      </svg>
+    </a>
+
+    <button class="sound-toggle" id="soundToggle" title="صدا">🔊</button>
+
+    <div class="calculator">
+      <div class="display">
+        <div class="history" id="history"></div>
+        <div class="current" id="current">0</div>
+      </div>
+      <div class="keys">
+        <button class="func" data-action="clear">AC</button>
+        <button class="func" data-action="backspace" aria-label="حذف رقم آخر">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 5H9l-6 7 6 7h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+            <path d="m13 9 5 6M18 9l-5 6"/>
+          </svg>
+        </button>
+        <button class="func" data-action="percent">%</button>
+        <button class="op" data-op="÷">÷</button>
+
+        <button class="num" data-num="7">7</button>
+        <button class="num" data-num="8">8</button>
+        <button class="num" data-num="9">9</button>
+        <button class="op" data-op="×">×</button>
+
+        <button class="num" data-num="4">4</button>
+        <button class="num" data-num="5">5</button>
+        <button class="num" data-num="6">6</button>
+        <button class="op" data-op="−">−</button>
+
+        <button class="num" data-num="1">1</button>
+        <button class="num" data-num="2">2</button>
+        <button class="num" data-num="3">3</button>
+        <button class="op" data-op="+">+</button>
+
+        <button class="func" data-action="toggle">±</button>
+        <button class="num" data-num="0">0</button>
+        <button class="num" data-num=".">.</button>
+        <button class="equal" data-action="equals">=</button>
+      </div>
+    </div>
+
+  <script>
+  /* ===== 1) منطق ماشین‌حساب ===== */
+  const currentEl = document.getElementById('current');
+  const historyEl = document.getElementById('history');
+
+  let current = '0';
+  let previous = null;
+  let operator = null;
+  let shouldResetCurrent = false;
+  let historyText = '';
+
+  function updateDisplay() {
+    currentEl.classList.remove('small','tiny','error');
+    if (current.length > 9) currentEl.classList.add('small');
+    if (current.length > 13) currentEl.classList.add('tiny');
+    if (current === 'Error') currentEl.classList.add('error');
+    currentEl.textContent = current;
+    historyEl.textContent = historyText;
+  }
+
+  function pulseDisplay() {
+    currentEl.classList.remove('flash');
+    void currentEl.offsetWidth;
+    currentEl.classList.add('flash');
+  }
+
+  function inputNumber(num) {
+    if (current === 'Error') {
+      current = '0';
+      previous = null;
+      operator = null;
+      shouldResetCurrent = false;
+      historyText = '';
+    }
+    if (shouldResetCurrent) { current = '0'; shouldResetCurrent = false; }
+    if (num === '.') {
+      if (current.includes('.')) return;
+      current += '.';
+    } else {
+      if (current === '0') current = num;
+      else current += num;
+    }
+    updateDisplay();
+  }
+
+  function calculate() {
+    if (previous === null || operator === null) return;
+    const a = parseFloat(previous);
+    const b = parseFloat(current);
+    let result;
+    switch (operator) {
+      case '+': result = a + b; break;
+      case '−': result = a - b; break;
+      case '×': result = a * b; break;
+      case '÷': result = b === 0 ? 'Error' : a / b; break;
+      default: return;
+    }
+    if (typeof result === 'number' && !Number.isInteger(result)) {
+      result = parseFloat(result.toFixed(8));
+    }
+    current = String(result);
+    previous = null;
+    operator = null;
+    shouldResetCurrent = true;
+    historyText = '';
+    updateDisplay();
+    pulseDisplay();
+  }
+
+  function handleOperator(op) {
+    if (operator !== null && !shouldResetCurrent) calculate();
+    previous = current;
+    operator = op;
+    shouldResetCurrent = true;
+    historyText = `${previous} ${op}`;
+    updateDisplay();
+  }
+
+  function handleAction(action) {
+    switch (action) {
+      case 'clear':
+        current = '0'; previous = null; operator = null;
+        shouldResetCurrent = false; historyText = '';
+        break;
+      case 'backspace':
+        if (current === 'Error') {
+          current = '0';
+          previous = null;
+          operator = null;
+          shouldResetCurrent = false;
+          historyText = '';
+        } else {
+          current = current.length > 1 ? current.slice(0, -1) : '0';
+          if (current === '-' || current === '') current = '0';
+        }
+        break;
+      case 'toggle':
+        if (current !== '0' && current !== 'Error') {
+          current = current.startsWith('-') ? current.slice(1) : '-' + current;
+          shouldResetCurrent = false;
+        }
+        break;
+      case 'percent':
+        if (current !== 'Error') {
+          current = String(parseFloat(current) / 100);
+          shouldResetCurrent = false;
+        }
+        break;
+      case 'equals':
+        if (operator !== null) {
+          const expr = `${previous} ${operator} ${current}`;
+          calculate();
+          historyText = expr + ' =';
+        }
+        break;
+    }
+    updateDisplay();
+  }
+
+  /* ===== 2) صدا + لرزش ===== */
+  let soundOn = true;
+  let audioCtx = null;
+  let lastVibrate = 0;
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    soundOn = !soundOn;
+    soundToggle.textContent = soundOn ? '🔊' : '🔇';
+    soundToggle.style.opacity = soundOn ? '1' : '0.6';
+  });
+
+  function playClick(freq = 660, type = 'sine', dur = 0.06, vol = 0.06) {
+    if (!soundOn) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.7, audioCtx.currentTime + dur);
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + dur);
+    } catch(_) {}
+  }
+
+  function vibrate(ms = 12) {
+    if (!('vibrate' in navigator)) return;
+    const now = Date.now();
+    if (now - lastVibrate < 40) return;
+    lastVibrate = now;
+    try { navigator.vibrate(ms); } catch(_) {}
+  }
+
+  /* ===== 3) ripple و spark ===== */
+  function spawnRipple(btn, e) {
+    const rect = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-layer';
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    const x = (e.clientX || rect.left + rect.width/2) - rect.left - size/2;
+    const y = (e.clientY || rect.top + rect.height/2) - rect.top - size/2;
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  }
+
+  const SPARK_COLORS = ['#8fa3b8', '#4a6fa5', '#c97b4a', '#d4dde6', '#ffffff'];
+  function spawnSparks(x, y, count = 6) {
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const color = SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];
+      s.style.background = color;
+      s.style.boxShadow = `0 0 12px ${color}`;
+      s.style.left = x + 'px';
+      s.style.top = y + 'px';
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 30 + Math.random() * 60;
+      s.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+      s.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 650);
+    }
+  }
+
+  /* ===== 4) اتصال دکمه‌ها ===== */
+  document.querySelectorAll('button[data-num], button[data-op], button[data-action]').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+      spawnRipple(btn, e);
+      if (btn.dataset.num !== undefined) { playClick(880, 'triangle', 0.05, 0.05); vibrate(8); }
+      else if (btn.dataset.op !== undefined) { playClick(520, 'sawtooth', 0.07, 0.05); vibrate(14); }
+      else if (btn.dataset.action === 'equals') { playClick(1040, 'sine', 0.12, 0.08); vibrate([10, 20, 10]); }
+      else if (btn.dataset.action === 'backspace') { playClick(300, 'square', 0.06, 0.05); vibrate(12); }
+      else { playClick(400, 'square', 0.05, 0.04); vibrate(10); }
+      spawnSparks(e.clientX, e.clientY, btn.dataset.action === 'equals' ? 16 : 7);
+    });
+
+    btn.addEventListener('click', () => {
+      if (btn.dataset.num !== undefined) inputNumber(btn.dataset.num);
+      else if (btn.dataset.op !== undefined) handleOperator(btn.dataset.op);
+      else if (btn.dataset.action !== undefined) handleAction(btn.dataset.action);
+    });
+  });
+
+  /* ===== 5) کیبورد ===== */
+  window.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (/[0-9.]/.test(key)) { inputNumber(key); playClick(880,'triangle',0.05,0.05); }
+    else if (key === '+') { handleOperator('+'); playClick(520,'sawtooth',0.07,0.05); }
+    else if (key === '-') { handleOperator('−'); playClick(520,'sawtooth',0.07,0.05); }
+    else if (key === '*') { handleOperator('×'); playClick(520,'sawtooth',0.07,0.05); }
+    else if (key === '/') { e.preventDefault(); handleOperator('÷'); playClick(520,'sawtooth',0.07,0.05); }
+    else if (key === 'Enter' || key === '=') { handleAction('equals'); playClick(1040,'sine',0.12,0.08); }
+    else if (key === 'Escape') { handleAction('clear'); playClick(400,'square',0.05,0.04); }
+    else if (key === '%') { handleAction('percent'); }
+    else if (key === 'Backspace') {
+      e.preventDefault();
+      handleAction('backspace');
+      playClick(300, 'square', 0.06, 0.05);
+      vibrate(12);
+    }
+  });
+
+  /* ===== 6) ذرات canvas ===== */
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  resize();
+  addEventListener('resize', resize);
+
+  const NUM = 60;
+  const dots = [];
+  for (let i = 0; i < NUM; i++) {
+    dots.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2 + 0.6,
+      hue: [210, 220, 25, 200][Math.floor(Math.random()*4)]
+    });
+  }
+
+  let mouse = { x: -9999, y: -9999 };
+  addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  addEventListener('pointerleave', () => { mouse.x = -9999; mouse.y = -9999; });
+  addEventListener('pointerup', () => { mouse.x = -9999; mouse.y = -9999; });
+  addEventListener('pointercancel', () => { mouse.x = -9999; mouse.y = -9999; });
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const d of dots) {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0 || d.x > W) d.vx *= -1;
+      if (d.y < 0 || d.y > H) d.vy *= -1;
+      const dx = d.x - mouse.x, dy = d.y - mouse.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 120) {
+        const force = (120 - dist) / 120;
+        d.x += (dx / (dist||1)) * force * 2;
+        d.y += (dy / (dist||1)) * force * 2;
+      }
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${d.hue}, 45%, 65%, 0.7)`;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = `hsla(${d.hue}, 60%, 60%, 1)`;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    for (let i = 0; i < dots.length; i++) {
+      for (let j = i+1; j < dots.length; j++) {
+        const a = dots[i], b = dots[j];
+        const d = Math.hypot(a.x-b.x, a.y-b.y);
+        if (d < 110) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(143,163,184,${0.22 * (1 - d/110)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  /* ===== 7) PWA ===== */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    });
+  }
+
+  updateDisplay();
+  </script>
+  </body>
+  </html>
